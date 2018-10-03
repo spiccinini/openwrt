@@ -266,16 +266,17 @@
  
 --- a/Makefile
 +++ b/Makefile
-@@ -25,6 +25,12 @@ OBJS-$(HWSIM) += hwsim.o
+@@ -25,6 +25,13 @@
  
  OBJS += $(OBJS-y) $(OBJS-Y)
  
-+OBJS_FULL = ocb offch cqm wowlan coalesce roc p2p ap mgmt vendor
++OBJS_FULL = ocb offch cqm wowlan coalesce roc p2p ap
 +ifdef IW_FULL
 +  CFLAGS += -DIW_FULL
 +else
-+  OBJS:=$(filter-out $(patsubst %,%.o,$(OBJS_FULL)),$(OBJS))
++  OBJS:=$(filter-out $(patsubst %,%.o,$(OBJS_DISABLED)),$(OBJS))
 +endif
++
  ALL = iw
  
  ifeq ($(NO_PKG_CONFIG),)
