@@ -5,4 +5,3 @@ src-git telephony https://git.openwrt.org/feed/telephony.git^b9d7b321d15a44c5abb
 
 src-git libremesh https://github.com/libremesh/lime-packages.git;master
 src-git libremap https://github.com/libremesh/libremap-agent.git;master
-src-git fbw https://github.com/libremesh/FirstBootWizard.git;master
