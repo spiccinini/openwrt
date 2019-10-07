@@ -162,6 +162,10 @@ get_status_led() {
 	cf-e385ac)
 		status_led="$board:blue:wlan2g"
 		;;
+	cpe210-v2|\
+	cpe210-v3|\
+	cpe510-v2|\
+	cpe210|\
 	cpe510)
 		status_led="tp-link:green:link4"
 		;;
