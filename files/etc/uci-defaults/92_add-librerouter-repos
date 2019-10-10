@@ -1,0 +1,28 @@
+#!/bin/sh
+
+. /etc/os-release
+[ -f /etc/lime_release ] && . /etc/lime_release
+
+feeds_file="/etc/opkg/librerouterfeeds.conf"
+
+[ -f "$feeds_file" ] && {
+  echo "LibreRouter opkg feeds already defined - skipping"
+  exit 0
+}
+
+[ -z "$LEDE_ARCH" ] && {
+  echo "Release information not available, skipping opkg configuration"
+  exit 0
+}
+
+[ "$LIME_CODENAME" != "development" ] && {
+	base_url="http://repo.librerouter.org/releases/$LIME_RELEASE/targets/$LEDE_BOARD/packages"
+	echo "Configuring official LibreRouter opkg feeds"
+	echo "src/gz librerouter $base_url" > /etc/opkg/librerouterfeeds.conf
+	key_name="a71b3c8285abd28b"
+	key_content="RWSnGzyChavSiyQ+vLk3x7F0NqcLa4kKyXCdriThMhO78ldHgxGljM/8"
+	echo "$key_content" >> "/etc/opkg/keys/$key_name"
+} || {
+    echo "Not configuring LibreRouter feed as it is a development built"
+}
+
