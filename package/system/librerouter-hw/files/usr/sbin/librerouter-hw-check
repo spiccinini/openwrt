@@ -1,0 +1,57 @@
+#!/usr/bin/env lua
+
+local ERRORS = false
+
+local function run_command_get_output(cmd)
+    local handle = io.popen(cmd)
+    local output = handle:read('*all')
+    handle:close()
+    return output
+end
+
+local report_file = io.open('/root/librerouter-hw-check-report.txt', 'w')
+
+local function log(str)
+    print(str)
+    report_file:write(str..'\n')
+end
+
+log('* Checking radio interfaces:')
+local up_interfaces = run_command_get_output("iw dev | grep Interface | awk '{print $2}'")
+
+for _, iface_prefix in pairs({'wlan0', 'wlan1', 'wlan2'}) do
+    local up = string.find(up_interfaces, iface_prefix) ~= nil
+    if up then
+        log('\t' .. iface_prefix .. ' interface: OK')
+    else
+        log('\t' .. iface_prefix .. ' interface: BAD')
+        ERRORS = true
+    end
+end
+
+log('* Checking mac addresses:')
+local mac_addresses = run_command_get_output("cat /sys/class/net/*/address")
+
+local bad_mac_empty = string.find(mac_addresses, '02:03:04:05:06') ~= nil
+local bad_mac_atheros = string.find(mac_addresses, '00:03:7f:00:01') ~= nil
+
+local bad_mac = bad_mac_empty or bad_mac_atheros
+if bad_mac then
+    log('\tMAC address: BAD')
+    log(mac_addresses)
+    ERRORS = true
+else
+    log('\tMAC address: OK')
+end
+
+-- run safe-upgrade bootstraping. There is no problem if it is already bootstraped
+run_command_get_output("safe-upgrade bootstrap")
+
+
+if ERRORS then
+    log("ERROR: errors ocurred!")
+    os.exit(125)
+else
+    log("SUCCESS")
+    os.exit(0)
+end
