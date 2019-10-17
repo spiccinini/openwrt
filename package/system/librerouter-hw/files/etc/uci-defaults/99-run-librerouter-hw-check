@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# we wait until the LR is configured, up and stable
+(sleep 200 && librerouter-hw-check )&
+
+exit 0
