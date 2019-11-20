@@ -1,0 +1,19 @@
+# Read the documentation in /docs directory
+# and on http://libremesh.org
+
+### System options
+
+config lime system
+
+
+### Network general option
+
+config lime network
+
+
+### WiFi general options
+
+config lime wifi
+	list modes 'ap_2ghz'
+	list modes 'apname_2ghz'
+	list modes 'ieee80211s_5ghz'
