@@ -1,0 +1,103 @@
+--- a/drivers/net/wireless/ath/ath9k/init.c
++++ b/drivers/net/wireless/ath/ath9k/init.c
+@@ -704,6 +704,13 @@ static int ath9k_init_softc(u16 devid, s
+ 	if (ret)
+ 		goto err_hw;
+ 
++	ah->req_no_ack = 0;
++	ah->tx_no_ack = 0;
++	ah->ifs_ignore_backoff = 0;
++	ah->ignore_virt_cs = 0;
++	ah->force_channel_idle = 0;
++	ah->force_rx_clear = 0;
++
+ 	ret = ath9k_init_queues(sc);
+ 	if (ret)
+ 		goto err_queues;
+--- a/drivers/net/wireless/ath/ath9k/xmit.c
++++ b/drivers/net/wireless/ath/ath9k/xmit.c
+@@ -1427,8 +1427,13 @@ static void ath_tx_fill_desc(struct ath_
+ 			    txq == sc->tx.uapsdq)
+ 				info.flags |= ATH9K_TXDESC_CLRDMASK;
+ 
++			if (ah->req_no_ack) {
++				info.flags |= ATH9K_TXDESC_NOACK;
++			}
++
+ 			if (tx_info->flags & IEEE80211_TX_CTL_NO_ACK)
+ 				info.flags |= ATH9K_TXDESC_NOACK;
++
+ 			if (tx_info->flags & IEEE80211_TX_CTL_LDPC)
+ 				info.flags |= ATH9K_TXDESC_LDPC;
+ 
+@@ -2092,6 +2097,29 @@ static void ath_tx_txqaddbuf(struct ath_
+ 	ath_dbg(common, QUEUE, "qnum: %d, txq depth: %d\n",
+ 		txq->axq_qnum, txq->axq_depth);
+ 
++	ath_dbg(common, XMIT, "MV-3: ifs_ignore_backoff=%d, ignore_virt_cs=%d, force_channel_idle=%d, force_rx_clear=%d, tx_no_ack=%d",
++		ah->ifs_ignore_backoff, ah->ignore_virt_cs, ah->force_channel_idle, ah->force_rx_clear, ah->tx_no_ack);
++
++	if (ah->ifs_ignore_backoff) {
++		REG_SET_BIT(ah, AR_D_GBL_IFS_MISC, AR_D_GBL_IFS_MISC_IGNORE_BACKOFF);
++	}
++
++	if (ah->ignore_virt_cs) {
++		REG_SET_BIT(ah, AR_DIAG_SW, AR_DIAG_IGNORE_VIRT_CS);
++	}
++
++	if (ah->force_channel_idle) {
++		REG_SET_BIT(ah, AR_DIAG_SW, AR_DIAG_FORCE_CH_IDLE_HIGH);
++	}
++
++	if (ah->force_rx_clear) {
++		REG_SET_BIT(ah, AR_DIAG_SW, AR_DIAG_FORCE_RX_CLEAR);
++	}
++
++	if (ah->tx_no_ack) {
++		REG_SET_BIT(ah, AR_DIAG_SW, AR_DIAG_ACK_DIS);
++	}
++
+ 	if (edma && list_empty(&txq->txq_fifo[txq->txq_headidx])) {
+ 		list_splice_tail_init(head, &txq->txq_fifo[txq->txq_headidx]);
+ 		INCR(txq->txq_headidx, ATH_TXFIFO_DEPTH);
+--- a/drivers/net/wireless/ath/ath9k/debug.c
++++ b/drivers/net/wireless/ath/ath9k/debug.c
+@@ -1666,5 +1666,22 @@ int ath9k_init_debug(struct ath_hw *ah)
+ 	debugfs_create_file("nf_override", S_IRUSR | S_IWUSR,
+ 			    sc->debug.debugfs_phy, sc, &fops_nf_override);
+ 
++	debugfs_create_u8("req_no_ack", S_IRUSR | S_IWUSR,
++			   sc->debug.debugfs_phy, &ah->req_no_ack);
++
++	debugfs_create_u8("tx_no_ack", S_IRUSR | S_IWUSR,
++			   sc->debug.debugfs_phy, &ah->tx_no_ack);
++
++	debugfs_create_u8("ifs_ignore_backoff", S_IRUSR | S_IWUSR,
++			   sc->debug.debugfs_phy, &ah->ifs_ignore_backoff);
++
++	debugfs_create_u8("ignore_virt_cs", S_IRUSR | S_IWUSR,
++			   sc->debug.debugfs_phy, &ah->ignore_virt_cs);
++
++	debugfs_create_u8("force_channel_idle", S_IRUSR | S_IWUSR,
++			   sc->debug.debugfs_phy, &ah->force_channel_idle);
++
++	debugfs_create_u8("force_rx_clear", S_IRUSR | S_IWUSR,
++			   sc->debug.debugfs_phy, &ah->force_rx_clear);
+ 	return 0;
+ }
+--- a/drivers/net/wireless/ath/ath9k/hw.h
++++ b/drivers/net/wireless/ath/ath9k/hw.h
+@@ -814,6 +814,13 @@ struct ath_hw {
+ 	u32 ah_flags;
+ 	s16 nf_override;
+ 
++	u8 req_no_ack; // ask the other party to not send ACK
++	u8 tx_no_ack; // disable sending ACK packets
++	u8 ifs_ignore_backoff;
++	u8 ignore_virt_cs;
++	u8 force_channel_idle; // disable physical carrier sensing
++	u8 force_rx_clear;
++
+ 	unsigned long diag;
+ 
+ 	bool reset_power_on;
