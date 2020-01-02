@@ -1,9 +1,25 @@
+# LibreRouterOs
 
-## Build instructions
+LibreRouterOs is a firmware based on LibreMesh and OpenWrt that provides official LibreRouter support.
 
-Dependencies: You must have installed: gcc, binutils, bzip2, flex, python,
+## Download
+
+Binaries for the LibreRouter can be downloaded from https://github.com/LibreRouterOrg/openwrt/releases 
+
+## Build from source instructions
+
+### Why I would want to build the firmware from source?
+
+* If you have other hardware than the LibreRouter you can use this repository to build a LibreMesh firmware for it
+* If you want to test non release versions or contribute to the LibreRouterOs development somehow
+
+### Dependencies
+
+You must have installed: gcc, binutils, bzip2, flex, python,
 perl, make, find, grep, diff, unzip, gawk, getopt, subversion, time,
-libz-dev (or zlib) and libc headers.
+libz-dev (or zlib) and libc headers. You can use [the OpenWrt build-system documentation](https://openwrt.org/docs/guide-developer/build-system/install-buildsystem#examples_of_package_installations) where there is a list of copy pastable install instructions for multiple linux distributions.
+
+### The build instructions
 
 1. Run `./scripts/feeds update -a` to obtain all the latest package definitions
 defined in feeds.conf.default
