@@ -3,5 +3,5 @@ src-git luci https://git.openwrt.org/project/luci.git^3a3d8f493963f2c6cb57afc4ba
 src-git routing https://github.com/LibreRouterOrg/routing.git^2aa1506714d28704234998808249907a8289d945
 src-git telephony https://git.openwrt.org/feed/telephony.git^06a5323734038c3866f507787256581dba3d8522
 
-src-git libremesh https://github.com/libremesh/lime-packages.git^96dcfa439d2757067bc73812b218aa689be9ea57
+src-git libremesh https://github.com/libremesh/lime-packages.git^3dd7c9780ebf96c2cd94b596cc4ef64e1654482b
 src-git libremap https://github.com/libremesh/libremap-agent.git;master
