@@ -1,0 +1,57 @@
+image: "librerouter/librerouteros-builder:latest"
+
+variables:
+  DOWNLOAD_CACHE: "/home/build/cache/dl"
+
+stages:
+  - build
+  - deploy
+
+full_build:
+  stage: build
+  artifacts:
+    name: "${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHORT_SHA}"
+    paths:
+     - bin/packages/mips_24kc/
+     - bin/packages/x86_64/
+     - bin/targets/ar71xx/
+     - bin/targets/x86/
+    when: on_success
+    expire_in: 1 week
+
+  script:
+    - ./scripts/feeds update -a
+    - ./scripts/feeds install -a
+
+    - mkdir -p ${DOWNLOAD_CACHE}
+
+    # default build
+    - cp configs/default_config .config
+
+    # remove explicit LibreRouter device
+    - sed -i '/CONFIG_TARGET_ar71xx_generic_DEVICE_librerouter-v1/d' .config
+
+    # add multi devices configs
+    - cat configs/default_config_multi >> .config
+
+    - echo DOWNLOAD_FOLDER=\"${DOWNLOAD_CACHE}\" >> .config
+
+    - make defconfig
+    - make download
+    - make -j2
+
+    # build x86_64
+    - cp configs/default_config_x86_64 .config
+    - echo DOWNLOAD_FOLDER=\"${DOWNLOAD_CACHE}\" >> .config
+    - make defconfig
+    - make download
+    - make -j2
+
+    # cleaning up
+    - rm -f bin/targets/ar71xx/generic/openwrt-ar71xx-generic-vmlinux*
+    - rm -f bin/targets/ar71xx/generic/openwrt-ar71xx-generic-root.squashfs
+
+upload_files:
+  stage: deploy
+  script:
+    - ls -al *
